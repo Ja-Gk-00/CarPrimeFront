@@ -25,7 +25,7 @@ function StronaGlowna() {
   function pobierzDostepneSamochody() {
     setLoading(true);
     axios
-      .get('/car')
+      .get('https://carprimeapi-cddtdnh9bbdqgzex.polandcentral-01.azurewebsites.net/car')
       .then((response) => {
         console.log('API Response:', response.data);
         if (Array.isArray(response.data)) {
