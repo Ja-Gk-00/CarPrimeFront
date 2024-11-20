@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/CarPrimeFront/static/css/main.ce518221.css",
+    "main.js": "/CarPrimeFront/static/js/main.bf8054c1.js",
+    "static/js/453.1983b98c.chunk.js": "/CarPrimeFront/static/js/453.1983b98c.chunk.js",
+    "index.html": "/CarPrimeFront/index.html",
+    "main.ce518221.css.map": "/CarPrimeFront/static/css/main.ce518221.css.map",
+    "main.bf8054c1.js.map": "/CarPrimeFront/static/js/main.bf8054c1.js.map",
+    "453.1983b98c.chunk.js.map": "/CarPrimeFront/static/js/453.1983b98c.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.ce518221.css",
+    "static/js/main.bf8054c1.js"
+  ]
+}
