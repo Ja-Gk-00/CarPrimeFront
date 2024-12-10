@@ -1,10 +1,8 @@
 // src/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './styles/LandingPage.css';
-import LoginForm from './LoginForm';
-import RegisterForm from './RegisterForm';
-import CarRentalForm from './CarRetrurnForm';
+import './styles/HomePage.css';
+import CarRentalForm from './CarReturnForm'; // Assuming the form is used for both renting and returning
 
 function HomePage() {
   const [brand, setBrand] = useState('');
@@ -107,6 +105,7 @@ function HomePage() {
 
   useEffect(() => {
     handleSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProperties]);
 
   function paginateCars() {
@@ -176,11 +175,6 @@ function HomePage() {
             {property}
           </label>
         ))}
-      </div>
-
-      <div className="auth-forms">
-        <LoginForm />
-        <RegisterForm />
       </div>
 
       {loading ? (
