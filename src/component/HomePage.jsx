@@ -1,10 +1,9 @@
-// src/HomePage.jsx
+// src/components/HomePage.jsx
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './styles/LandingPage.css';
-import LoginForm from './LoginForm';
-import RegisterForm from './RegisterForm';
-import CarRentalForm from './CarRetrurnForm';
+import './HomePage.css';
+import CarRentalForm from './CarRentalFrom'; 
 
 function HomePage() {
   const [brand, setBrand] = useState('');
@@ -16,7 +15,7 @@ function HomePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const carsPerPage = 5;
   const [selectedCar, setSelectedCar] = useState(null);
-  const [showRentalForm, setShowRentalForm] = useState(false);
+  const [showRentalForm, setShowRentalForm] = useState(false); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -25,35 +24,60 @@ function HomePage() {
     fetchCarProperties();
   }, []);
 
-  function fetchAvailableCars() {
+  async function fetchAvailableCars() {
     setLoading(true);
-    axios
-      .get('https://carprimeapi-cddtdnh9bbdqgzex.polandcentral-01.azurewebsites.net/car')
-      .then((response) => {
-        if (Array.isArray(response.data)) {
-          const carsData = response.data
-            .map((car) => ({
-              id: car.id,
-              brand: car.brand,
-              model: car.name,
-              year: car.year || 2020,
-              properties: car.properties || ['Automatic', 'Petrol'],
-              description: car.description || 'No description.',
-              image: car.image || 'default_car.jpg',
-              status: car.status || 'available',
-            }))
-            .filter((car) => car.status === 'available');
-          setCars(carsData);
-          setFilteredCars(carsData);
-        } else {
-          setError('Invalid data format from API.');
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Failed to fetch car data.');
-        setLoading(false);
-      });
+    setError(null); 
+    try {
+      const response = await axios.get('/car');
+      console.log('API Response:', response.data); 
+
+      if (Array.isArray(response.data)) {
+        const carsData = response.data
+          .map((car) => ({
+            id: car.id,
+            brand: car.brand,
+            model: car.name,
+            year: car.year || 2020,
+            properties: car.properties || ['Automatic', 'Petrol'],
+            description: car.description || 'No description.',
+            image: car.image || 'default_car.jpg',
+            status: car.status || 'available',
+          }))
+          .filter((car) => car.status.toLowerCase() === 'available'); 
+
+        setCars(carsData);
+        setFilteredCars(carsData);
+      } else if (response.data && Array.isArray(response.data.cars)) { 
+        const carsData = response.data.cars
+          .map((car) => ({
+            id: car.id,
+            brand: car.brand,
+            model: car.name,
+            year: car.year || 2020,
+            properties: car.properties || ['Automatic', 'Petrol'],
+            description: car.description || 'No description.',
+            image: car.image || 'default_car.jpg',
+            status: car.status || 'available',
+          }))
+          .filter((car) => car.status.toLowerCase() === 'available');
+
+        setCars(carsData);
+        setFilteredCars(carsData);
+      } else {
+        setError('Invalid data format from API.');
+      }
+    } catch (err) {
+      console.error('Error fetching car data:', err);
+      if (err.response) {
+        setError(`Error: ${err.response.status} - ${err.response.data}`);
+      } else if (err.request) {
+        setError('No response received from the server.');
+      } else {
+        setError(`Error: ${err.message}`);
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   function fetchCarProperties() {
@@ -107,6 +131,7 @@ function HomePage() {
 
   useEffect(() => {
     handleSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProperties]);
 
   function paginateCars() {
@@ -139,8 +164,15 @@ function HomePage() {
         fetchAvailableCars();
         setShowRentalForm(false);
       })
-      .catch(() => {
-        alert('There was a problem renting the car.');
+      .catch((err) => {
+        console.error('Error renting car:', err);
+        if (err.response) {
+          alert(`Error: ${err.response.status} - ${err.response.data}`);
+        } else if (err.request) {
+          alert('No response received from the server.');
+        } else {
+          alert(`Error: ${err.message}`);
+        }
       });
   }
 
@@ -178,11 +210,6 @@ function HomePage() {
         ))}
       </div>
 
-      <div className="auth-forms">
-        <LoginForm />
-        <RegisterForm />
-      </div>
-
       {loading ? (
         <div className="spinner">
           <div className="double-bounce1"></div>
@@ -210,7 +237,7 @@ function HomePage() {
               <button
                 onClick={() => {
                   setSelectedCar(car);
-                  setShowRentalForm(true);
+                  setShowRentalForm(true); // Show the rental form
                 }}
               >
                 Rent

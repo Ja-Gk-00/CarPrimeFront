@@ -1,4 +1,4 @@
-// src/AuthContext.jsx
+// src/context/AuthContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
 
 export const AuthContext = createContext();
@@ -10,12 +10,10 @@ export function AuthProvider({ children }) {
   });
 
   const login = () => {
-    console.log('Login function called');
     setIsAuthenticated(true);
   };
 
   const logout = () => {
-    console.log('Logout function called');
     setIsAuthenticated(false);
   };
 
@@ -28,8 +26,6 @@ export function AuthProvider({ children }) {
     login,
     logout,
   };
-
-  console.log('AuthProvider value:', contextValue);
 
   return (
     <AuthContext.Provider value={contextValue}>
