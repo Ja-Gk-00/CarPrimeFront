@@ -27,9 +27,14 @@ function App() {
           element={!user ? <LoginPage /> : <Navigate to="/" replace />}
         />
         <Route
-          path="/returns"
+          path="/rent"
+          element={user ? <HomePage /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/return"
           element={user ? <ReturnsPage /> : <Navigate to="/login" replace />}
         />
+        {/*  */}
         <Route
           path="*"
           element={<Navigate to={user ? "/" : "/login"} replace />}

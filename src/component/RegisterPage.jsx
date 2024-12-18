@@ -1,22 +1,15 @@
-// src/components/RegistrationForm.jsx
+// src/component/RegistrationForm.jsx
 
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './RegistrationForm.css';
 import { toast } from 'react-toastify';
-import { UserContext } from '../context/UserContext';
-import { useNavigate } from 'react-router-dom'; 
 
 function RegistrationForm({ onSwitchToLogin }) {
-  const { login } = useContext(UserContext);
-  const navigate = useNavigate(); 
-
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
-    password: '',
-    confirmPassword: '',
     birthdate: '',
     licenceIssuedDate: '',
     country: '',
@@ -35,43 +28,6 @@ function RegistrationForm({ onSwitchToLogin }) {
     }));
   };
 
-  const handleGoogleRegister = async (response) => {
-    setSubmitting(true);
-    try {
-      const API_URL = './api/Auth/register';
-      const res = await axios.post(API_URL, {
-        IdToken: response.credential,
-      });
-      const token = res.data.Token;
-      toast.success('Registration successful!', {
-        position: 'top-right',
-        autoClose: 3000,
-      });
-      login({ token });
-      navigate('/'); 
-    } catch (error) {
-      console.error('Google Registration error:', error);
-      if (error.response) {
-        toast.error(`Registration failed: ${error.response.data.Message || error.response.data}`, {
-          position: 'top-right',
-          autoClose: 5000,
-        });
-      } else if (error.request) {
-        toast.error('No response from the server. Please try again later.', {
-          position: 'top-right',
-          autoClose: 5000,
-        });
-      } else {
-        toast.error(`Error: ${error.message}`, {
-          position: 'top-right',
-          autoClose: 5000,
-        });
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const validate = () => {
     const newErrors = {};
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required.';
@@ -82,16 +38,6 @@ function RegistrationForm({ onSwitchToLogin }) {
       !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)
     ) {
       newErrors.email = 'Invalid email address.';
-    }
-    if (!formData.password) {
-      newErrors.password = 'Password is required.';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters.';
-    }
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password.';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match.';
     }
     if (!formData.birthdate) newErrors.birthdate = 'Birthdate is required.';
     if (!formData.licenceIssuedDate) newErrors.licenceIssuedDate = 'Licence issued date is required.';
@@ -109,24 +55,13 @@ function RegistrationForm({ onSwitchToLogin }) {
     setSubmitting(true);
     try {
       const API_URL = './api/Auth/register';
-      const response = await axios.post(API_URL, {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        birthdate: formData.birthdate,
-        licenceIssuedDate: formData.licenceIssuedDate,
-        country: formData.country,
-        city: formData.city,
-        address: formData.address,
-      });
+      const response = await axios.post(API_URL, formData);
       const token = response.data.Token;
       toast.success('Registration successful!', {
         position: 'top-right',
         autoClose: 3000,
       });
-      login({ token });
-      navigate('/'); 
+      onSwitchToLogin();
     } catch (error) {
       console.error('Registration error:', error);
       if (error.response) {
@@ -150,24 +85,9 @@ function RegistrationForm({ onSwitchToLogin }) {
     }
   };
 
-  useEffect(() => {
-    if (window.google && window.google.accounts) {
-      window.google.accounts.id.initialize({
-        client_id: 'YOUR_GOOGLE_CLIENT_ID', 
-        callback: handleGoogleRegister,
-      });
-      window.google.accounts.id.renderButton(
-        document.getElementById('googleRegisterDiv'),
-        { theme: 'outline', size: 'large' }
-      );
-    }
-  }, []);
-
   return (
     <div className="registration-form-container">
       <h2>Create an Account</h2>
-      <div id="googleRegisterDiv" style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}></div>
-      <div className="separator">OR</div>
       <form onSubmit={handleSubmit} noValidate>
         <label htmlFor="firstName">
           First Name:
@@ -209,34 +129,6 @@ function RegistrationForm({ onSwitchToLogin }) {
             required
           />
           {errors.email && <span className="error-message">{errors.email}</span>}
-        </label>
-
-        <label htmlFor="password">
-          Password:
-          <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="Enter your password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          {errors.password && <span className="error-message">{errors.password}</span>}
-        </label>
-
-        <label htmlFor="confirmPassword">
-          Confirm Password:
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            placeholder="Confirm your password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
-          {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
         </label>
 
         <label htmlFor="birthdate">

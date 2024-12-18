@@ -3,7 +3,7 @@
 import React, { useContext } from 'react';
 import { UserContext } from '../context/UserContext';
 import './NavBar.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 function Navbar() {
@@ -13,7 +13,7 @@ function Navbar() {
   const handleLogout = () => {
     logout();
     toast.info('Logged out successfully.', {
-      position: toast.POSITION.TOP_RIGHT,
+      position: 'top-right',
       autoClose: 3000,
     });
     navigate('/login');
@@ -27,7 +27,13 @@ function Navbar() {
       <div className="navbar-links">
         {user ? (
           <>
-            <span className="navbar-user">Hello, {user.name}!</span>
+            <span className="navbar-user">Hello, {user.name || user.email}!</span>
+            <Link to="/rent">
+              <button className="navbar-button">Rent Car</button>
+            </Link>
+            <Link to="/return">
+              <button className="navbar-button">Return Car</button>
+            </Link>
             <button className="navbar-button" onClick={handleLogout}>
               Logout
             </button>

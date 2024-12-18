@@ -1,112 +1,84 @@
 // src/components/ReturnsPage.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import './ReturnsPage.css';
-import CarReturnForm from './CarReturnForm';
+import { UserContext } from '../context/UserContext';
+import { toast } from 'react-toastify';
 
 function ReturnsPage() {
-  const [rentedCars, setRentedCars] = useState([]);
+  const { user } = useContext(UserContext);
+  const [rentals, setRentals] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [selectedCar, setSelectedCar] = useState(null);
-  const [showReturnForm, setShowReturnForm] = useState(false);
-
   useEffect(() => {
-    fetchRentedCars();
+    fetchUserRentals();
   }, []);
 
-  async function fetchRentedCars() {
+  const fetchUserRentals = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('https://carprimeapi-cddtdnh9bbdqgzex.polandcentral-01.azurewebsites.net/car/rented'); // Replace with your actual endpoint
-      console.log('Rented Cars:', response.data);
-      
-      if (Array.isArray(response.data)) {
-        const carsData = response.data.map((car) => ({
-          id: car.id,
-          brand: car.brand,
-          model: car.name,
-          year: car.year || 2020,
-          properties: car.properties || ['Automatic', 'Petrol'],
-          description: car.description || 'No description.',
-          image: car.image || 'default_car.jpg',
-          status: car.status || 'rented',
-
-        }));
-        setRentedCars(carsData);
-      } else {
-        setError('Invalid data format from API.');
-      }
+      const response = await axios.get(`./api/rentals?email=${user.email}`);
+      setRentals(response.data);
     } catch (err) {
-      console.error('Error fetching rented cars:', err);
-      if (err.response) {
-        setError(`Error: ${err.response.status} - ${err.response.data}`);
-      } else if (err.request) {
-        setError('No response received from the server.');
-      } else {
-        setError(`Error: ${err.message}`);
-      }
+      console.error('Error fetching rentals:', err);
+      setError('Failed to load your rentals.');
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  const handleReturnSuccess = (carId) => {
-    setRentedCars(rentedCars.filter(car => car.id !== carId));
+  const handleReturn = async (rentalId) => {
+    try {
+      await axios.post(`./api/rentals/${rentalId}/return`);
+      toast.success('Car returned successfully!', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
+      fetchUserRentals();
+    } catch (err) {
+      console.error('Error returning car:', err);
+      toast.error('Failed to return car. Please try again.', {
+        position: 'top-right',
+        autoClose: 5000,
+      });
+    }
   };
 
   return (
     <div className="returns-container">
-      <h1>Car Returns</h1>
-
+      <h1>Your Rentals</h1>
       {loading ? (
         <div className="spinner">
+          {/* */}
           <div className="double-bounce1"></div>
           <div className="double-bounce2"></div>
         </div>
       ) : error ? (
         <p className="error">{error}</p>
-      ) : rentedCars.length === 0 ? (
-        <p>No rented cars at the moment.</p>
+      ) : rentals.length === 0 ? (
+        <p>You have no rentals.</p>
       ) : (
-        <div className="rented-car-list">
-          {rentedCars.map((car) => (
-            <div key={car.id} className="rented-car-card">
+        <div className="rental-list">
+          {rentals.map((rental) => (
+            <div key={rental.id} className="rental-card">
               <img
-                src={`${process.env.PUBLIC_URL}/images/${car.image}`}
-                alt={`${car.brand} ${car.model}`}
+                src={`/images/${rental.car.image}`}
+                alt={`${rental.car.brand} ${rental.car.model}`}
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
                 }}
               />
-              <div className="car-details">
-                <h2>{car.brand} {car.model} ({car.year})</h2>
-                <p>{car.description}</p>
-                <p>Features: {car.properties.join(', ')}</p>
-                <button
-                  onClick={() => {
-                    setSelectedCar(car);
-                    setShowReturnForm(true);
-                  }}
-                >
-                  Return Car
-                </button>
-              </div>
+              <h2>{rental.car.brand} {rental.car.model}</h2>
+              <p>Rental Date: {new Date(rental.rentalDate).toLocaleDateString()}</p>
+              <p>Due Date: {new Date(rental.dueDate).toLocaleDateString()}</p>
+              <button onClick={() => handleReturn(rental.id)}>Return Car</button>
             </div>
           ))}
         </div>
-      )}
-
-      {showReturnForm && selectedCar && (
-        <CarReturnForm
-          car={selectedCar}
-          onClose={() => setShowReturnForm(false)}
-          returnCar={handleReturnSuccess}
-        />
       )}
     </div>
   );
